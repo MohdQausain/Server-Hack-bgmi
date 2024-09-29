@@ -259,13 +259,6 @@ def show_recent_logs(message):
         response = "No data found ❌"
         bot.reply_to(message, response)
 
-# Polling the bot
-while True:
-    try:
-        bot.polling(none_stop=True)
-    except Exception as e:
-        print(e)
-
 
 
 
