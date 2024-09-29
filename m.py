@@ -410,11 +410,10 @@ def broadcast_message(message):
         bot.reply_to(message, response)
 
 # Start the bot's polling loop
+#bot.polling()
 while True:
     try:
         bot.polling(none_stop=True)
     except Exception as e:
-        print(f"Error occurred: {e}")
-        # You can also add a short sleep here to avoid rapid looping
-        time.sleep(1)  # Optional: Add a delay before retrying
+        print(e)
 
