@@ -301,10 +301,9 @@ def handle_bgmi(message):
     full_command = f"./bgmi {target} {port} {time} 110"
     process = subprocess.run(full_command, shell=True)
     response = f"BGMI Attack Finished. Target: {target} Port: {port} Time: {time}"
-else:
-    response = "✅ Usage :- /bgmi <target> <port> <time>"
-
-bot.reply_to(message, response)
+    else:
+        response = "✅ Usage :- /bgmi <target> <port> <time>"
+        bot.reply_to(message, response)
 
 
 
@@ -323,8 +322,7 @@ def show_command_logs(message):
                 response = "❌ No Command Logs Found For You ❌."
     except FileNotFoundError:
         response = "No command logs found."
-
-    bot.reply_to(message, response)
+        bot.reply_to(message, response)
 
 
 @bot.message_handler(commands=['help'])
@@ -390,11 +388,10 @@ def broadcast_message(message):
                     bot.send_message(user_id, message_to_broadcast)
                 except Exception as e:
                     print(f"Failed to send broadcast message to user {user_id}: {str(e)}")
-        response = "Broadcast Message Sent Successfully To All Users 👍."
+                    response = "Broadcast Message Sent Successfully To All Users 👍."
     else:
         response = "🤖 Please Provide A Message To Broadcast."
-    
-    bot.reply_to(message, response)
+        bot.reply_to(message, response)
 
 # Start the bot's polling loop
 while True:
