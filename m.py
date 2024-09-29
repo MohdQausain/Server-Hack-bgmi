@@ -291,9 +291,9 @@ def handle_bgmi(message):
     
     command = message.text.split()
     if len(command) == 4:
-    target = command[1]
-    port = int(command[2])
-    time = int(command[3])
+        target = command[1]
+        port = int(command[2])
+        time = int(command[3])
     # No restriction on time
     record_command_logs(user_id, '/bgmi', target, port, time)
     log_command(user_id, target, port, time)
