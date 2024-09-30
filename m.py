@@ -31,17 +31,24 @@ def read_users():
 def read_free_users():
     try:
         with open(FREE_USER_FILE, "r") as file:
-            lines = file.read().splitlines()
+            lines = file.read().splitlines()  # Read all lines from the file
             for line in lines:
                 if line.strip():  # Check if line is not empty
-                    user_info = line.split()
-                    if len(user_info) == 2:
-                        user_id, credits = user_info
-                        free_user_credits[user_id] = int(credits)
+                    user_info = line.split()  # Split line into user_id and credits
+                    if len(user_info) == 2:  # Ensure it has exactly two items (user_id and credits)
+                        user_id = user_info[0]  # Extract the user ID
+                        free_user_credits[user_id] = float('inf')  # Set unlimited credits for the user
                     else:
                         print(f"Ignoring invalid line in free user file: {line}")
     except FileNotFoundError:
+        print(f"File {FREE_USER_FILE} not found.")
         pass
+
+# Call the function to read free users
+read_free_users()
+
+# Example: You can print the free_user_credits dictionary to check if it worked
+print(free_user_credits)
 
 # List to store allowed user IDs
 allowed_user_ids = read_users()
