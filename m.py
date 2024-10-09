@@ -19,13 +19,17 @@ USER_FILE = "users.txt"
 # File to store command logs
 LOG_FILE = "log.txt"
 
-# Function to read user IDs from the file
-def read_users():
+# Function to read user IDs from a given file
+def read_free_users(FREE_USER_FILE):
     try:
-        with open(USER_FILE, "r") as file:
+        with open(FREE_USER_FILE, "r") as file:
             return file.read().splitlines()
     except FileNotFoundError:
         return []
+
+# Call the function with the file path
+free_user_ids = read_free_users("free_users.txt")
+
 
 # Function to read free user IDs and their credits from the file
 def read_free_users():
