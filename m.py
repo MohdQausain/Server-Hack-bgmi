@@ -29,6 +29,7 @@ def read_users():
 
 # Function to read free user IDs and their credits from the file
 # Function to read free user IDs and their credits from the file
+# Function to read free user IDs and their credits from the file
 def read_free_users():
     try:
         with open(FREE_USER_FILE, "r") as file:
@@ -38,16 +39,14 @@ def read_free_users():
                     user_info = line.split()
                     if len(user_info) == 2:
                         user_id, credits = user_info
-                        
-                        # If credits are "unlimited" (represented by 'unlimited' in file), set to None
-                        if credits.lower() == "unlimited":
-                            free_user_credits[user_id] = None  # None represents unlimited
-                        else:
-                            free_user_credits[user_id] = int(credits)
+                        free_user_credits[user_id] = int(credits)
                     else:
                         print(f"Ignoring invalid line in free user file: {line}")
     except FileNotFoundError:
-        pass  # Gracefully handle missing file
+        pass
+
+# List to store allowed user IDs
+allowed_user_ids = read_users()
 
 
 # Function to log command to the file
